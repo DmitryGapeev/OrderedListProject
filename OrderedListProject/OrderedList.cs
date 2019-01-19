@@ -34,48 +34,157 @@ namespace AlgorithmsDataStructures
 			int result = 0;
 			if (typeof(T) == typeof(String))
 			{
-				// версия для лексикографического сравнения строк
+			  result = string.Compare(v1 as string, v2 as string);
 			}
 			else
 			{
-				// универсальное сравнение
+			  var hash1 = v1.GetHashCode();
+			  var hash2 = v2.GetHashCode();
+			  if (hash1 == hash2) result = 0;
+        else if (hash1 < hash2) result = -1;
+			  else result = 1;
 			}
 
 			return result;
-			// -1 если v1 < v2
-			// 0 если v1 == v2
-			// +1 если v1 > v2
 		}
 
-		public void Add(T value)
+	  private void AddInTail(Node<T> _item)
+	  {
+	    if (head == null)
+	    {
+	      head = _item;
+	      head.next = null;
+	      head.prev = null;
+	    }
+	    else
+	    {
+	      tail.next = _item;
+	      _item.prev = tail;
+	    }
+	    tail = _item;
+	  }
+
+    public void Add(T value)
 		{
-			// автоматическая вставка value 
-			// в нужную позицию
-		}
+		  if (head == null)
+		    AddInTail(new Node<T>(value));
+		  else
+		  {
+		    Node<T> node = head;
+		    Node<T> newNode = new Node<T>(value);
+		    bool addCondition = false;
+
+		    while (node != null)
+		    {
+		      var compareResult = Compare(value, node.value);
+
+          addCondition = (compareResult <= 0 && _ascending) || (compareResult >= 0 && !_ascending);
+
+		      if (addCondition)
+		      {
+		        newNode.prev = node.prev;
+		        newNode.next = node;
+		        node.prev = newNode;
+		        if (newNode.prev != null)
+		          newNode.prev.next = newNode;
+		        else
+		          head = newNode;
+
+            break;
+          }
+
+		      node = node.next;
+		    }
+
+		    if (node == null)
+		    {
+		      newNode.prev = tail;
+		      tail.next = newNode;
+		      tail = newNode;
+		    }
+		  }
+    }
 
 		public Node<T> Find(T val)
 		{
-			return null; // здесь будет ваш код
+		  Node<T> node = head;
+		  while (node != null)
+		  {
+		    int compareResult = Compare(val, node.value);
+
+        if (compareResult == 0) return node;
+
+        if((compareResult < 0 && _ascending) || (compareResult > 0 && !_ascending))
+          break;
+
+		    node = node.next;
+		  }
+      return null;
 		}
 
 		public void Delete(T val)
 		{
-			// здесь будет ваш код
+		  Node<T> node = head;
+
+		  while (node != null)
+		  {
+		    int compareResult = Compare(val, node.value);
+
+		    if (compareResult == 0)
+		    {
+		      if (node.prev != null)
+		        node.prev.next = node.next;
+		      else
+		        head = node.next;
+
+		      if (node.next != null)
+		        node.next.prev = node.prev;
+		      else
+		        tail = node.prev;
+
+          break;
+		    }
+
+		    if ((compareResult < 0 && _ascending) || (compareResult > 0 && !_ascending))
+		      break;
+
+		    node = node.next;
+		  }
 		}
 
-		public void Clear(bool asc)
+    public void Clear(bool asc)
 		{
 			_ascending = asc;
-			// здесь будет ваш код
-		}
+
+		  Node<T> node = head;
+		  head = null;
+		  tail = null;
+		  while (node != null)
+		  {
+		    Node<T> nextNode = node.next;
+		    node = null;
+		    node = nextNode;
+		  }
+    }
 
 		public int Count()
 		{
-			return 0; // здесь будет ваш код подсчёта количества элементов в списке
-		}
+		  int count = 0;
+		  var node = head;
 
-		List<Node<T>> GetAll() // выдать все элементы упорядоченного 
-			// списка в виде стандартного списка
+		  if (node != null)
+		  {
+		    while (node != null)
+		    {
+		      count++;
+		      node = node.next;
+		    }
+		  }
+
+		  return count;
+    }
+
+		List<Node<T>> GetAll()
 		{
 			List<Node<T>> r = new List<Node<T>>();
 			Node<T> node = head;
